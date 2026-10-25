@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#182433">
+<title>Europa: Encruzilhadas da História</title>
+<style>
+:root{--bg:#101821;--panel:#192634;--panel2:#213244;--text:#f4f1e9;--muted:#bac5d0;--gold:#e7bd70;--red:#e17d72;--green:#8ec7a2}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#26384a 0,#101821 55%);color:var(--text);font:16px/1.55 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh}
+main{max-width:760px;margin:0 auto;padding:22px 16px 42px}.eyebrow{text-transform:uppercase;letter-spacing:.15em;font-size:.72rem;color:var(--gold);font-weight:800}
+h1{font-size:clamp(2rem,7vw,3.3rem);line-height:1.03;margin:.55rem 0 1rem;letter-spacing:-.04em}h2{font-size:1.45rem;line-height:1.2;margin:.3rem 0 .7rem}p{margin:.65rem 0}.muted{color:var(--muted)}.hero{padding:24px 0 18px}.panel{background:rgba(25,38,52,.94);border:1px solid #34485c;border-radius:18px;padding:20px;margin:14px 0;box-shadow:0 12px 35px #0002}.date{color:var(--gold);font-size:.85rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase}.choices{display:grid;gap:10px;margin-top:18px}.choice{width:100%;text-align:left;color:var(--text);background:var(--panel2);border:1px solid #42586d;border-radius:13px;padding:15px;cursor:pointer;font:inherit;transition:transform .12s,border-color .12s}.choice:hover,.choice:focus{border-color:var(--gold);transform:translateY(-1px);outline:none}.choice strong{display:block;margin-bottom:3px}.choice span{display:block;color:var(--muted);font-size:.92rem}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:16px 0}.stat{background:#111b25;border-radius:12px;padding:10px}.stat small{display:block;color:var(--muted);font-size:.72rem}.stat b{font-size:1.1rem}.meter{height:5px;background:#344354;border-radius:9px;overflow:hidden;margin-top:7px}.meter i{display:block;height:100%;background:var(--gold);width:50%;transition:width .25s}.notice{border-left:3px solid var(--gold);padding:10px 13px;background:#101b26;color:var(--muted);font-size:.9rem;margin-top:15px}.ending{border-color:#7c6350}.btn{background:var(--gold);color:#18202a;border:0;border-radius:11px;padding:12px 16px;font:inherit;font-weight:800;cursor:pointer;margin-top:10px}.small{font-size:.82rem;color:var(--muted)}.topline{display:flex;justify-content:space-between;gap:10px;align-items:center}.pill{font-size:.75rem;border:1px solid #42586d;border-radius:99px;padding:4px 9px;color:var(--muted)}footer{padding-top:12px;color:var(--muted);font-size:.78rem}
+@media(max-width:430px){main{padding:17px 12px 32px}.panel{padding:16px}.stats{gap:5px}.stat{padding:8px}.stat b{font-size:1rem}}
+</style>
+</head>
+<body>
+<main>
+  <div class="hero">
+    <div class="eyebrow">Um livro-jogo histórico</div>
+    <h1>Europa: Encruzilhadas da História</h1>
+    <p class="muted">1914 até o presente. A história real é o cenário. As tuas decisões escrevem uma história alternativa — e algumas escolhas podem acabar com a tua jornada.</p>
+  </div>
+  <div class="topline"><span class="pill" id="chapterPill">Prólogo</span><span class="pill" id="savePill">Protótipo 0.1</span></div>
+  <div class="stats" aria-label="Indicadores da jornada">
+    <div class="stat"><small>Influência</small><b id="influence">50</b><div class="meter"><i id="mInfluence"></i></div></div>
+    <div class="stat"><small>Estabilidade</small><b id="stability">50</b><div class="meter"><i id="mStability"></i></div></div>
+    <div class="stat"><small>Confiança</small><b id="trust">50</b><div class="meter"><i id="mTrust"></i></div></div>
+  </div>
+  <section class="panel" id="story" aria-live="polite"></section>
+  <footer>Ficção interativa com base em acontecimentos históricos. As decisões e os destinos alternativos são ficcionais; os marcos históricos indicados são reais. O jogo não pretende equiparar responsabilidades históricas nem minimizar o sofrimento das vítimas.</footer>
+</main>
+<script>
+const initialStats={influence:50,stability:50,trust:50};
+let stats={...initialStats}, visited=[], current="start", ended=false;
+const scenes={
+start:{year:"Viena, junho de 1914",chapter:"Prólogo",title:"Uma Europa à beira do abismo",text:"É 28 de junho de 1914. O assassinato do arquiduque Francisco Fernando em Sarajevo desencadeia uma crise diplomática. Tu és um jovem funcionário do Ministério dos Negócios Estrangeiros do Império Austro-Húngaro. Não podes controlar os grandes impérios, mas o teu memorando pode influenciar a resposta inicial.",note:"Contexto histórico: o assassinato aconteceu; a crise de julho levou à guerra. O teu papel e o memorando são ficcionais.",choices:[
+{label:"Defender uma investigação internacional",desc:"Tentar ganhar tempo e manter aberta a via diplomática.",effects:{influence:4,stability:8,trust:6},next:"july"},
+{label:"Apoiar um ultimato duro à Sérvia",desc:"Uma resposta firme pode parecer necessária, mas aumenta o risco de escalada.",effects:{influence:8,stability:-12,trust:-5},next:"ultimatum"},
+{label:"Vazar o memorando à imprensa",desc:"Forçar debate público — e arriscar perder acesso ao governo.",effects:{influence:-8,stability:4,trust:10},next:"leak"}]},
+july:{year:"Julho de 1914",chapter:"Capítulo I · A crise",title:"As últimas portas da diplomacia",text:"As potências trocam telegramas e mobilizam forças. O tempo é curto. A Alemanha oferece apoio a Viena, enquanto outras capitais calculam os próprios riscos. O teu superior pede uma recomendação final.",note:"A guerra generalizada começou no verão de 1914 após uma crise de alianças, mobilizações e decisões políticas.",choices:[
+{label:"Propor mediação entre as potências",desc:"Uma conferência pode falhar, mas dá uma saída diplomática.",effects:{influence:3,stability:12,trust:8},next:"war"},
+{label:"Acelerar a mobilização",desc:"Não ficar para trás parece prudente aos militares.",effects:{influence:8,stability:-18,trust:-4},next:"war"},
+{label:"Recusar ordens e renunciar",desc:"Preservas a consciência, mas perdes a tua posição.",effects:{influence:-20,stability:3,trust:8},next:"resign"}]},
+ultimatum:{year:"Julho de 1914",chapter:"Capítulo I · A crise",title:"Uma exigência impossível?",text:"O ultimato à Sérvia é severo. A resposta sérvia aceita vários pontos, mas não todos. Em Viena, alguns veem isso como motivo para guerra; outros, como uma oportunidade para negociar.",note:"O ultimato austro-húngaro à Sérvia foi entregue em 23 de julho de 1914.",choices:[
+{label:"Recomendar negociações sobre os pontos contestados",desc:"Tentar limitar o conflito sem exigir uma rendição total.",effects:{influence:2,stability:10,trust:6},next:"war"},
+{label:"Apoiar a declaração de guerra",desc:"A crise passa do campo diplomático para o militar.",effects:{influence:8,stability:-20,trust:-8},next:"war"},
+{label:"Alertar em segredo diplomatas neutros",desc:"Criar pressão externa, mas arriscar ser descoberto.",effects:{influence:-4,stability:5,trust:9},next:"leak"}]},
+leak:{year:"Verão de 1914",chapter:"Capítulo I · A crise",title:"O custo de dizer a verdade",text:"A imprensa publica trechos do teu memorando. O público exige respostas, mas os dirigentes ficam furiosos com a quebra de sigilo. A crise internacional continua a acelerar.",note:"A tua fuga de informação é ficcional; a escalada diplomática e militar é histórica.",choices:[
+{label:"Usar a atenção pública para pedir mediação",desc:"Transformar o escândalo numa última iniciativa diplomática.",effects:{influence:1,stability:8,trust:7},next:"war"},
+{label:"Destruir os documentos restantes e fugir",desc:"Tentas sobreviver, mas abandonas qualquer influência.",effects:{influence:-18,stability:0,trust:-2},next:"resign"}]},
+war:{year:"1914–1916",chapter:"Capítulo II · A Grande Guerra",title:"A guerra que ninguém controla",text:"A guerra alastra pela Europa. A mobilização, as trincheiras e as baixas transformam a vida quotidiana. Tu trabalhas agora numa administração de abastecimento: decisões sobre transporte e alimentos afetam soldados e civis.",note:"A Primeira Guerra Mundial durou de 1914 a 1918 e causou destruição em escala continental.",choices:[
+{label:"Priorizar alimentos para cidades e hospitais",desc:"Apoio civil e confiança aumentam, embora o comando militar critique a decisão.",effects:{influence:-2,stability:10,trust:12},next:"1917"},
+{label:"Priorizar a logística militar a qualquer custo",desc:"Ganhos imediatos para o esforço de guerra, com custo social.",effects:{influence:8,stability:-12,trust:-10},next:"1917"},
+{label:"Organizar uma rede clandestina de ajuda",desc:"Ajuda pessoas vulneráveis, mas a descoberta pode ser fatal.",effects:{influence:-5,stability:5,trust:10},next:"aid"}]},
+aid:{year:"1916",chapter:"Capítulo II · A Grande Guerra",title:"Uma rede sob vigilância",text:"A rede leva alimentos e medicamentos a civis. A polícia aproxima-se, mas um jornal estrangeiro começa a relatar as condições da população. Tens de decidir se manténs a rede ou se tentas protegê-la tornando-a pública.",note:"A rede e os teus contactos são ficcionais; a escassez e o sofrimento civil durante a guerra são históricos.",choices:[
+{label:"Tornar a operação pública e exigir supervisão humanitária",desc:"Reduzes o segredo e ganhas apoio, mas podes perder acesso oficial.",effects:{influence:-2,stability:8,trust:12},next:"1917"},
+{label:"Continuar em segredo",desc:"A ajuda continua, mas o risco de detenção cresce.",effects:{influence:0,stability:-3,trust:5},next:"1917"}]},
+"1917":{year:"1917–1918",chapter:"Capítulo III · Impérios em queda",title:"Fome, revolução e exaustão",text:"A Rússia vive duas revoluções em 1917 e sai da guerra após o Tratado de Brest-Litovsk, em 1918. No centro da Europa, a escassez e a fadiga enfraquecem os impérios. A tua instituição começa a desmoronar-se.",note:"A Revolução Russa de 1917 e o colapso de vários impérios são acontecimentos históricos.",choices:[
+{label:"Preparar uma transição política negociada",desc:"Tentar proteger a população e evitar vinganças.",effects:{influence:4,stability:10,trust:8},next:"1918"},
+{label:"Apoiar uma repressão para manter a ordem",desc:"Pode adiar a mudança, mas aumenta a resistência.",effects:{influence:8,stability:-12,trust:-15},next:"1918"},
+{label:"Ajudar a organizar conselhos locais",desc:"Criar estruturas de apoio popular, com resultado incerto.",effects:{influence:-2,stability:4,trust:12},next:"1918"}]},
+"1918":{year:"Novembro de 1918",chapter:"Capítulo IV · O armistício",title:"O fim de um mundo",text:"A guerra termina com o armistício de 11 de novembro de 1918. O Império Austro-Húngaro desintegra-se e surgem novos Estados. Tu precisas decidir onde colocar a tua experiência e lealdade num mapa redesenhado.",note:"O armistício encerrou os combates na frente ocidental; os tratados de paz posteriores redefiniram fronteiras.",choices:[
+{label:"Trabalhar por instituições democráticas",desc:"Uma aposta lenta na legitimidade e na reconstrução.",effects:{influence:4,stability:8,trust:10},next:"peace"},
+{label:"Apoiar um movimento nacionalista radical",desc:"Promete orgulho e ordem, mas pode aprofundar divisões.",effects:{influence:10,stability:-10,trust:-12},next:"peace"},
+{label:"Dedicar-se à reconstrução económica",desc:"Concentrar-se em emprego, alimentos e infraestrutura.",effects:{influence:2,stability:12,trust:5},next:"peace"}]},
+peace:{year:"1919–1929",chapter:"Capítulo V · Uma paz frágil",title:"A paz não resolve tudo",text:"Os tratados de paz redesenham a Europa. A República de Weimar nasce na Alemanha; a Áustria torna-se uma república. Inflação, disputas territoriais e ressentimento alimentam a instabilidade, enquanto movimentos culturais e democráticos também florescem.",note:"O Tratado de Versalhes foi assinado em 1919; a crise europeia do pós-guerra teve causas múltiplas.",choices:[
+{label:"Defender cooperação económica e proteção social",desc:"Construir resiliência, embora os resultados levem tempo.",effects:{influence:3,stability:12,trust:8},next:"1933"},
+{label:"Explorar o ressentimento para ganhar poder",desc:"A popularidade pode crescer enquanto a democracia enfraquece.",effects:{influence:12,stability:-15,trust:-12},next:"1933"},
+{label:"Fortalecer a imprensa livre e o parlamento",desc:"Instituições mais fortes podem resistir à polarização.",effects:{influence:-2,stability:7,trust:12},next:"1933"}]},
+"1933":{year:"Janeiro de 1933",chapter:"Capítulo VI · A democracia sob ataque",title:"Uma escolha na Alemanha",text:"Adolf Hitler é nomeado chanceler da Alemanha. A crise económica, a violência política e o enfraquecimento das instituições ajudam os nazistas a consolidar o poder. Tu és agora um funcionário público numa cidade da Europa Central e tens de decidir como responder à perseguição política e à erosão democrática.",note:"A nomeação de Hitler como chanceler em 30 de janeiro de 1933 é um marco histórico. As opções abaixo não mudam esse facto.",choices:[
+{label:"Defender o Estado de direito e proteger pessoas perseguidas",desc:"É perigoso, mas preserva princípios e vidas.",effects:{influence:-5,stability:5,trust:14},next:"1938"},
+{label:"Ficar em silêncio para preservar o cargo",desc:"Manténs acesso ao sistema, mas a tua omissão tem consequências.",effects:{influence:5,stability:-8,trust:-12},next:"1938"},
+{label:"Colaborar com as autoridades para subir na carreira",desc:"Podes ganhar influência, mas tornas-te parte da máquina repressiva.",effects:{influence:12,stability:-15,trust:-20},next:"1938"}]},
+"1938":{year:"Março–novembro de 1938",chapter:"Capítulo VII · O continente cede",title:"Até onde recuar?",text:"A Alemanha anexa a Áustria no Anschluss, em março de 1938. Em setembro, o Acordo de Munique cede os Sudetos à Alemanha; em novembro, a violência antissemita coordenada conhecida como Kristallnacht atinge comunidades judaicas. A tua rede recebe pedidos urgentes de ajuda.",note:"Anschluss, Acordo de Munique e Kristallnacht são acontecimentos históricos. A tua rede é ficcional.",choices:[
+{label:"Ajudar pessoas perseguidas a encontrar rotas de fuga",desc:"Há riscos reais, mas a ajuda pode salvar vidas.",effects:{influence:-4,stability:4,trust:15},next:"1939"},
+{label:"Apoiar concessões diplomáticas para evitar guerra",desc:"A política de apaziguamento tenta evitar conflito, mas não impede a expansão nazista.",effects:{influence:4,stability:-8,trust:-7},next:"1939"},
+{label:"Colaborar com a repressão",desc:"Aumenta o teu poder imediato, ao custo de cumplicidade.",effects:{influence:10,stability:-18,trust:-25},next:"collaborator"}]},
+collaborator:{year:"1938",chapter:"Final alternativo",title:"O preço da colaboração",text:"A tua influência cresce dentro do aparelho repressivo, mas as consequências humanas das tuas decisões são irreversíveis. O jogo encerra esta rota: não há vitória em transformar perseguição em pontuação.",note:"Este final é uma crítica narrativa à colaboração com a perseguição nazista.",ending:true,endingTitle:"Fim de jogo · Legado sombrio",endingText:"A tua jornada termina com poder institucional e uma falha moral profunda. A história real lembra o custo humano da perseguição e do genocídio."},
+"1939":{year:"Setembro de 1939",chapter:"Capítulo VIII · Segunda Guerra Mundial",title:"A guerra regressa à Europa",text:"A Alemanha invade a Polônia em 1 de setembro de 1939; o Reino Unido e a França declaram guerra à Alemanha. A Segunda Guerra Mundial começou na Europa. Tu tens de escolher como agir sob ocupação, guerra e perseguição.",note:"A invasão da Polônia e as declarações de guerra são factos históricos.",choices:[
+{label:"Apoiar uma rede civil de resistência e socorro",desc:"A resistência é perigosa, mas pode proteger pessoas e documentar crimes.",effects:{influence:-5,stability:6,trust:15},next:"1942"},
+{label:"Concentrar-se em manter serviços essenciais",desc:"Tentar proteger civis através de hospitais, água e alimentos.",effects:{influence:1,stability:10,trust:8},next:"1942"},
+{label:"Cooperar com as autoridades ocupantes",desc:"A sobrevivência imediata pode vir acompanhada de cumplicidade.",effects:{influence:8,stability:-12,trust:-18},next:"occupation"}]},
+occupation:{year:"1940–1942",chapter:"Final alternativo",title:"Sobreviver a qualquer custo",text:"A cooperação garante-te acesso e proteção temporária, mas as pessoas que dependiam de ti ficam expostas. Quando os crimes do regime se tornam impossíveis de ignorar, a tua margem de manobra desaparece.",note:"A ocupação e os crimes nazistas são históricos; esta trajetória pessoal é ficcional.",ending:true,endingTitle:"Fim de jogo · A confiança perdida",endingText:"Sobreviver não é o mesmo que vencer. A tua história termina com a rede comunitária destruída e a tua credibilidade perdida."},
+"1942":{year:"1942–1945",chapter:"Capítulo IX · Sobreviver e testemunhar",title:"Resistência, perseguição e libertação",text:"A guerra atinge uma escala devastadora. O Holocausto assassina seis milhões de judeus, além de milhões de outras vítimas da perseguição e violência nazistas. A resistência, os exércitos aliados e os movimentos civis enfrentam enormes riscos. Tu tens uma última missão: preservar provas e proteger sobreviventes.",note:"O Holocausto foi o genocídio sistemático dos judeus europeus pela Alemanha nazista e seus colaboradores. A memória das vítimas é central para compreender este período.",choices:[
+{label:"Preservar testemunhos e documentos de crimes",desc:"A prova pode apoiar justiça futura e combater a negação.",effects:{influence:2,stability:5,trust:12},next:"1945"},
+{label:"Priorizar evacuação e abrigo de sobreviventes",desc:"Salvar vidas agora, mesmo que documentos se percam.",effects:{influence:-2,stability:10,trust:12},next:"1945"},
+{label:"Desistir da rede para proteger apenas a ti",desc:"Podes escapar, mas abandonas pessoas que contam contigo.",effects:{influence:3,stability:-8,trust:-18},next:"1945"}]},
+"1945":{year:"Maio de 1945",chapter:"Capítulo X · Ruínas e reconstrução",title:"A guerra termina — e agora?",text:"A Alemanha nazista capitula em maio de 1945; a guerra na Europa termina. Cidades estão destruídas, milhões foram deslocados e o continente precisa reconstruir-se. O mundo entra numa nova disputa entre os Estados Unidos e a União Soviética.",note:"A capitulação alemã na Europa ocorreu em maio de 1945. A guerra global só terminou em setembro, após a rendição do Japão.",choices:[
+{label:"Apoiar reconstrução democrática e cooperação europeia",desc:"A recuperação exige instituições, confiança e compromissos duradouros.",effects:{influence:3,stability:12,trust:10},next:"coldwar"},
+{label:"Priorizar segurança nacional e fronteiras rígidas",desc:"Pode parecer protetor, mas dificulta a reconciliação.",effects:{influence:7,stability:-4,trust:-4},next:"coldwar"},
+{label:"Trabalhar por justiça e memória das vítimas",desc:"Investigações e testemunhos ajudam a enfrentar crimes do passado.",effects:{influence:1,stability:6,trust:14},next:"coldwar"}]},
+coldwar:{year:"1947–1961",chapter:"Capítulo XI · A Europa dividida",title:"Uma cortina desce sobre o continente",text:"A Guerra Fria divide a Europa em blocos. A reconstrução ocidental é apoiada pelo Plano Marshall; no leste, regimes comunistas ficam sob influência soviética. Em 1961, Berlim é dividida fisicamente pelo Muro. Tu trabalhas numa cidade marcada por fronteiras e vigilância.",note:"O Plano Marshall, a divisão da Europa e a construção do Muro de Berlim em 1961 são marcos históricos.",choices:[
+{label:"Construir redes de diálogo entre famílias separadas",desc:"Pequenas ações civis mantêm laços humanos através da divisão.",effects:{influence:-1,stability:7,trust:14},next:"1989"},
+{label:"Apoiar a linha dura do teu bloco",desc:"Aumenta o acesso às autoridades, mas aprofunda a desconfiança.",effects:{influence:8,stability:-8,trust:-10},next:"1989"},
+{label:"Documentar abusos e defender direitos humanos",desc:"A documentação pode ter impacto, mas traz riscos pessoais.",effects:{influence:-4,stability:4,trust:13},next:"1989"}]},
+"1989":{year:"1989–1991",chapter:"Capítulo XII · Muros caem",title:"Uma mudança que parecia impossível",text:"Em 9 de novembro de 1989, a abertura das fronteiras de Berlim leva à queda do Muro. Em 1990, a Alemanha é reunificada; em 1991, a União Soviética dissolve-se. A Europa precisa escolher entre ampliar a cooperação, ignorar divisões persistentes ou explorar novos ressentimentos.",note:"A queda do Muro de Berlim e a reunificação alemã são factos históricos; a dissolução da URSS ocorreu em 1991.",choices:[
+{label:"Apoiar integração europeia e reconciliação",desc:"Cooperação institucional pode reduzir o risco de novos conflitos.",effects:{influence:4,stability:10,trust:10},next:"modern"},
+{label:"Defender soberania nacional acima de tudo",desc:"A autonomia importa, mas a falta de cooperação pode criar atritos.",effects:{influence:6,stability:-2,trust:-3},next:"modern"},
+{label:"Investir em reconciliação e desenvolvimento regional",desc:"A paz duradoura exige que comunidades não sejam deixadas para trás.",effects:{influence:2,stability:8,trust:12},next:"modern"}]},
+modern:{year:"2004–hoje",chapter:"Capítulo XIII · A Europa contemporânea",title:"Uma Europa interdependente",text:"A União Europeia amplia-se para incluir muitos países da Europa Central e Oriental em 2004 e nos anos seguintes. A crise financeira, a migração, a pandemia de COVID-19, a saída do Reino Unido da UE e a invasão russa em grande escala da Ucrânia em 2022 testam a cooperação europeia. Agora, a tua experiência pode ajudar a moldar a resposta a um continente sob pressão.",note:"Os acontecimentos citados são reais; esta decisão final é uma simulação, não uma previsão.",choices:[
+{label:"Investir em instituições democráticas e cooperação",desc:"A resposta é lenta, mas reforça a confiança e a capacidade coletiva.",effects:{influence:4,stability:10,trust:10},next:"ending"},
+{label:"Priorizar respostas nacionais imediatas",desc:"Pode responder a necessidades locais, mas reduz a coordenação.",effects:{influence:7,stability:-3,trust:-3},next:"ending"},
+{label:"Combater desinformação e proteger o debate público",desc:"Reforça a resiliência social, sem resolver todos os conflitos.",effects:{influence:2,stability:7,trust:13},next:"ending"}]},
+ending:{year:"Presente",chapter:"Epílogo",title:"O legado das tuas escolhas",text:"Chegaste ao presente. Não alteraste os grandes marcos da história real, mas as tuas decisões moldaram a tua influência, a estabilidade das comunidades à tua volta e a confiança que as pessoas depositam em ti.",note:"O jogo acompanha a tua trajetória ficcional ao lado de acontecimentos históricos reais.",ending:true,endingTitle:"Fim da primeira campanha",endingText:"A história continua aberta. Na próxima versão, podemos acrescentar mais caminhos, personagens, mapas, capítulos regionais e consequências que persistem entre gerações."},
+resign:{year:"1914–1918",chapter:"Final alternativo",title:"Afastado dos acontecimentos",text:"Ao renunciar, deixas de influenciar as decisões centrais. Sobrevives à crise, mas a tua história torna-se a de alguém que observa a transformação da Europa à distância.",note:"A personagem é ficcional.",ending:true,endingTitle:"Fim de jogo · O observador",endingText:"Nem toda a sobrevivência é uma vitória — mas afastar-se de uma máquina destrutiva também pode ser uma escolha moral."}
+};
+function clamp(n){return Math.max(0,Math.min(100,n))}
+function render(id){
+ current=id; const s=scenes[id]; if(!s)return;
+ document.getElementById("chapterPill").textContent=s.chapter;
+ document.getElementById("story").innerHTML=`<div class="date">${s.year}</div><h2>${s.title}</h2><p>${s.text}</p><div class="notice">${s.note}</div>${s.ending?`<div class="panel ending"><h2>${s.endingTitle||"Fim da jornada"}</h2><p>${s.endingText||""}</p><p class="muted">Resultado: Influência ${stats.influence} · Estabilidade ${stats.stability} · Confiança ${stats.trust}</p><button class="btn" onclick="restart()">Jogar novamente</button></div>`:`<div class="choices">${s.choices.map((c,i)=>`<button class="choice" onclick="choose(${i})"><strong>${c.label}</strong><span>${c.desc}</span></button>`).join("")}</div>`}
+ updateStats();
+}
+function updateStats(){
+ for(const k of ["influence","stability","trust"]){document.getElementById(k).textContent=stats[k];document.getElementById("m"+k[0].toUpperCase()+k.slice(1)).style.width=stats[k]+"%";}
+}
+function choose(i){
+ const s=scenes[current],c=s.choices[i];if(!c)return;
+ for(const k of Object.keys(c.effects))stats[k]=clamp(stats[k]+c.effects[k]);
+ visited.push({scene:current,choice:c.label});
+ if(stats.stability<=0||stats.trust<=0){renderGameOver();return}
+ render(c.next);
+}
+function renderGameOver(){
+ document.getElementById("chapterPill").textContent="Fim de jogo";
+ document.getElementById("story").innerHTML=`<div class="date">Colapso da tua trajetória</div><h2>Game over</h2><p>As decisões acumularam-se e perdeste a estabilidade ou a confiança necessárias para continuar a tua missão. Os grandes acontecimentos históricos continuam a decorrer, mas a tua personagem já não consegue influenciá-los.</p><div class="notice">Esta é uma regra do jogo, não uma afirmação de que a história real dependia de uma única pessoa.</div><button class="btn" onclick="restart()">Tentar outra trajetória</button>`;
+}
+function restart(){stats={...initialStats};visited=[];ended=false;render("start")}
+render("start");
+</script>
+</body>
+</html>
